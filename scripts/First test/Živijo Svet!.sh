@@ -1,0 +1,1 @@
+echo "Živijo Svet!"

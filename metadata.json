@@ -1,0 +1,9 @@
+{
+  "name": "Handy Scripts",
+  "version": 1,
+  "description": "Keep your bash scripts in the desktop for easy access.",
+  "uuid": "lucaskenda@gmail.com",
+  "shell-version": [
+    "3.30.2"
+  ]
+}
