@@ -1,8 +1,9 @@
 {
   "name": "Handy Scripts",
-  "version": 1,
+  "version": 3,
   "description": "Keep your bash scripts in the desktop for easy access.",
   "uuid": "lucaskenda@gmail.com",
+  "url": "https://github.com/lucaskenda/handyscripts",
   "shell-version": [
     "3.30.2"
   ]

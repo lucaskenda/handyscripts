@@ -18,8 +18,8 @@ let button;
 function init() {}
 
 function enable() {
-	_indicator = new Menu.Menu;
-	Main.panel.addToStatusArea('handy-scripts', _indicator, 0, 'right');
+	button = new Menu.Menu;
+	Main.panel.addToStatusArea('handy-scripts', button, 0, 'right');
 }
 
 function disable() {
