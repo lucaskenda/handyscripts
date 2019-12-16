@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extension-handyscripts">
+	<schema path="/org/gnome/shell/extensions/handyscripts/" id="org.gnome.shell.extensions.handyscripts">
+		<key name="scripts-button-show" type="b">
+			<default>true</default>
+			<summary>Show scripts button in menu.</summary>
+			<description>Show a button that opens the folder where are located the scripts.</description>
+		</key>
+		<key name="scripts-default-path-enabled" type="b">
+			<default>true</default>
+			<summary>Scripts default path enabled</summary>
+			<description>Enable or disable default path for the scripts folder.</description>
+		</key>
+		<key name="scripts-folder-path" type="s">
+			<default>''</default>
+			<summary>Scripts folder path</summary>
+			<description>The scripts folder path where are .</description>
+		</key>
+		<key name="repository" type="s">
+			<default>'Github'</default>
+			<summary>Repository</summary>
+			<description>Select repository.</description>
+		</key>
+	</schema>
+</schemalist>
