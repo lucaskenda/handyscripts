@@ -15,7 +15,8 @@ const SCHEMA = 'org.gnome.shell.extensions.handyscripts';
 const SCRIPTS_BUTTON_SHOWHIDE = 'scripts-button-show';
 const SCRIPTS_DEFAULT_PATH_ENABLEDISABLE = 'scripts-default-path-enabled';
 const SCRIPTS_FOLDER_PATH = 'scripts-folder-path';
-const NOTIFICATIONS = 'notifications';
+
+const BRANCH_ENTRY = 'branch-entry';
 
 const AppDir = GLib.build_filenamev([global.userdatadir, 'extensions/lucaskenda@gmail.com']);
 const ScriptsDir = 'scripts';
@@ -67,7 +68,7 @@ function buildPrefsWidget() {
 	}
 
 	var gitLabel = _createLabel(
-		_("Download from GIT"),
+		_("Download from GIT (Only HTTPS):"),
 		_("Download from Git repository. Only HTTPS!")
 	);
 
@@ -87,6 +88,14 @@ function buildPrefsWidget() {
 		_("Git https"),
 		_("Git https url"),
 		'',
+		true
+	);
+
+	var branchEntry = _createEntry(
+		BRANCH_ENTRY,
+		_("Branch"),
+		_("Branch name"),
+		'master',
 		true
 	);
 
@@ -130,6 +139,7 @@ function buildPrefsWidget() {
 	frame.add(gitLabel);
 	frame.add(repositoryComboBox);
 	frame.add(gitUrlEntry);
+	frame.add(branchEntry);
 	frame.add(usernameEntry);
 	frame.add(passwordEntry);
 	frame.add(updateButton);
@@ -195,6 +205,10 @@ function _createEntry(key, text, tooltip, placeholder, setVisibility) {
 
 	widget.set_placeholder_text(placeholder);
 	widget.set_visibility(setVisibility);
+	widget.text = settings.get_string(key);
+	widget.connect('changed', function() {
+		settings.set_string(key, widget.get_text());
+	});
 
 	box.pack_start(label, true, true, 0);
 	box.add(widget);

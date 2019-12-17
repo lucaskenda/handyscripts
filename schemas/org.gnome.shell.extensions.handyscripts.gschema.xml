@@ -16,6 +16,16 @@
 			<summary>Scripts folder path</summary>
 			<description>The scripts folder path where are .</description>
 		</key>
+		<key name="branch-entry" type="s">
+			<default>'master'</default>
+			<summary>Branch entry</summary>
+			<description>Branch entry</description>
+		</key>
+		<key name="notifications" type="s">
+			<default>''</default>
+			<summary>notification</summary>
+			<description>notification</description>
+		</key>
 		<key name="repository" type="s">
 			<default>'Github'</default>
 			<summary>Repository</summary>
