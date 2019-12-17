@@ -14,10 +14,8 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 
 const DefaultFolder = GLib.build_filenamev([global.userdatadir, 'extensions/lucaskenda@gmail.com']);
-var Folder = DefaultFolder;
 const ScriptsDir = 'scripts';
 
-const IS_FOLDER = 2;
 const SCHEMA = 'org.gnome.shell.extensions.handyscripts';
 const SCRIPTS_BUTTON_SHOWHIDE = 'scripts-button-show';
 const SCRIPTS_DEFAULT_PATH_ENABLEDISABLE = 'scripts-default-path-enabled';
@@ -33,11 +31,6 @@ const Menu = new Lang.Class({
       this.parent(1, 'MainPopupMenu', false);
 
 			this._settings = Convenience.getSettings(SCHEMA);
-
-			// Set folder
-			//if(this._settings.get_string(SCRIPTS_FOLDER_PATH) != '') {
-			//	Folder = this._settings.get_string(SCRIPTS_FOLDER_PATH);
-			//}
 
       let box = new St.BoxLayout();
       let icon = new St.Icon({ icon_name: 'utilities-terminal-symbolic', style_class: 'system-status-icon'});
@@ -64,7 +57,7 @@ const Menu = new Lang.Class({
     },
 
     _openFolder: function() {
-      Util.trySpawnCommandLine('nautilus ' + Folder + '/' + ScriptsDir + '/');
+      Util.trySpawnCommandLine('nautilus ' + this.folder);
     },
 
     _refreshMenu: function () {
@@ -76,60 +69,107 @@ const Menu = new Lang.Class({
 
     _renderMenu: function () {
 
-      let dir = Gio.file_new_for_path(Folder + '/' + ScriptsDir);
-      let files = dir.enumerate_children(Gio.FILE_ATTRIBUTE_STANDARD_NAME, Gio.FileQueryInfoFlags.NONE, null);
       let file, fileName;
       let folderArray = [];
+      let isEmpty = true;
 
-      while((file = files.next_file(null))) {
-
-        // Add only folders.
-        if(file.get_file_type() == IS_FOLDER) {
-
-          let fileName = file.get_name();
-
-          let menu = new PopupMenu.PopupSubMenuMenuItem(fileName, true);
-          menu.icon.icon_name = 'folder-symbolic';
-
-          folderArray.push({
-            name: fileName,
-            path: Folder + '/' + ScriptsDir + '/' + file.get_name(),
-            submenu: menu
-          });
-
-        }
-
+      // Set scripts folder
+			if(
+        this._settings.get_boolean(SCRIPTS_DEFAULT_PATH_ENABLEDISABLE) &&
+        this._settings.get_string(SCRIPTS_FOLDER_PATH) != ''
+      ) {
+        this.folder = this._settings.get_string(SCRIPTS_FOLDER_PATH);
+      } else {
+        this.folder = DefaultFolder + '/' + ScriptsDir;
       }
 
-      // For each folder list files that ends with .sh
-      for(var i=0; i < folderArray.length; i++) {
+      this.folder = this.folder.replace(/\/?$/, '/');
 
-        dir = Gio.file_new_for_path(folderArray[i].path);
-        files = dir.enumerate_children(Gio.FILE_ATTRIBUTE_STANDARD_NAME, Gio.FileQueryInfoFlags.NONE, null);
-        let file;
+      let dir = Gio.file_new_for_path(this.folder);
+
+      if(dir.query_exists(null)) {
+
+        let files = dir.enumerate_children(Gio.FILE_ATTRIBUTE_STANDARD_NAME, Gio.FileQueryInfoFlags.NONE, null);
 
         while((file = files.next_file(null))) {
 
           let fileName = file.get_name();
 
-          if(fileName.endsWith('.sh')) {
-            let popupMenuItem = new PopupMenu.PopupImageMenuItem(fileName.split('.')[0], 'media-playback-start-symbolic');
-            popupMenuItem.connect('activate', this._executeScript.bind(this, folderArray[i].path + '/' + fileName));
-            folderArray[i].submenu.menu.addMenuItem(popupMenuItem);
+          // Push folders to array.
+          if(file.get_file_type() == Gio.FileType.DIRECTORY) {
+
+            let menu = new PopupMenu.PopupSubMenuMenuItem(fileName, true);
+            menu.icon.icon_name = 'folder-symbolic';
+
+            folderArray.push({
+              name: fileName,
+              path: this.folder + fileName,
+              submenu: menu
+            });
+
+            isEmpty = false;
+
+          } else {
+
+            // Add files to menu.
+            if(file.get_file_type() == Gio.FileType.REGULAR) {
+
+              if(fileName.endsWith('.sh')) {
+                let popupMenuItem = new PopupMenu.PopupImageMenuItem(fileName.split('.')[0], 'media-playback-start-symbolic');
+                popupMenuItem.connect('activate', this._executeScript.bind(this, this.folder + fileName));
+                this.menu.addMenuItem(popupMenuItem);
+                isEmpty = false;
+              }
+
+            }
           }
 
         }
 
-        this.menu.addMenuItem(folderArray[i].submenu);
+        // For each folder list files that ends with .sh and add them to the menu array.
+        for(var i=0; i < folderArray.length; i++) {
 
-      }
+          dir = Gio.file_new_for_path(folderArray[i].path);
+          files = dir.enumerate_children(Gio.FILE_ATTRIBUTE_STANDARD_NAME, Gio.FileQueryInfoFlags.NONE, null);
+          let file;
 
-      // Scripts item
-      if(this._settings.get_boolean(SCRIPTS_BUTTON_SHOWHIDE) == true) {
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        let Scripts = new PopupMenu.PopupImageMenuItem('Scripts', 'system-run-symbolic');
+          while((file = files.next_file(null))) {
+
+            let fileName = file.get_name();
+
+            if(fileName.endsWith('.sh')) {
+              let popupMenuItem = new PopupMenu.PopupImageMenuItem(fileName.split('.')[0], 'media-playback-start-symbolic');
+              popupMenuItem.connect('activate', this._executeScript.bind(this, folderArray[i].path + fileName));
+              folderArray[i].submenu.menu.addMenuItem(popupMenuItem);
+              isEmpty = false;
+            }
+
+          }
+
+          this.menu.addMenuItem(folderArray[i].submenu);
+
+        }
+
+        if(isEmpty) {
+          // If is empty.
+          let Scripts = new PopupMenu.PopupMenuItem('Can\'t find scripts!');
+          this.menu.addMenuItem(Scripts);
+        }
+
+        // Scripts Folder menu.
+        if(this._settings.get_boolean(SCRIPTS_BUTTON_SHOWHIDE) == true) {
+          this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+          let Scripts = new PopupMenu.PopupImageMenuItem('Scripts', 'system-run-symbolic');
+          this.menu.addMenuItem(Scripts);
+          Scripts.connect('activate', this._openFolder.bind(this));
+        }
+
+      } else {
+
+        // If folder does not exists.
+        let Scripts = new PopupMenu.PopupMenuItem('Folder path does not exists!');
         this.menu.addMenuItem(Scripts);
-        Scripts.connect('activate', this._openFolder.bind(this));
+
       }
 
       this.actor.show();
