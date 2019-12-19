@@ -17,13 +17,17 @@
 
 *   Click on the terminal icon in the Status Bar and play with the example scripts.
 ```
-  > First Test/Hello World!
-  > First Test/Hallo Welt!
-  > First Test/Živijo Svet!
-  > First Test/Hola Mundo!
+  > Test/Hello World!
 ```
 *   Handy Scripts lists all folders and files that end with **.sh** extension.
 *   The search is not recursive and search just one depth below.
+
+## Changelog
+# v4
+### Added
+- Custom scripts folder path.
+- Show/hide scripts folder link in menu.
+- Download scripts from Github repository.
 
 ## Contact
 

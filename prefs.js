@@ -15,17 +15,20 @@ const SCHEMA = 'org.gnome.shell.extensions.handyscripts';
 const SCRIPTS_BUTTON_SHOWHIDE = 'scripts-button-show';
 const SCRIPTS_DEFAULT_PATH_ENABLEDISABLE = 'scripts-default-path-enabled';
 const SCRIPTS_FOLDER_PATH = 'scripts-folder-path';
-
+const GIT_HTTPS_URL_ENTRY = 'git-https-url-entry';
 const BRANCH_ENTRY = 'branch-entry';
 
-const AppDir = GLib.build_filenamev([global.userdatadir, 'extensions/lucaskenda@gmail.com']);
+const AppDir = GLib.build_filenamev(
+	[global.userdatadir, 'extensions/lucaskenda@gmail.com']
+);
+
 const ScriptsDir = 'scripts';
 
 let settings;
 
 function init() {
 	settings = Convenience.getSettings(SCHEMA);
-	Convenience.initTranslations("handyscripts");
+	Convenience.initTranslations('handyscripts');
 }
 
 function buildPrefsWidget() {
@@ -36,25 +39,25 @@ function buildPrefsWidget() {
 
 	frame.set_spacing(10);
 
-	var showScriptsButtonInMenuToggle = _createCheckBox(
+	let showScriptsButtonInMenuToggle = _createCheckBox(
 		SCRIPTS_BUTTON_SHOWHIDE,
-		_("Scripts folder link in menu"),
-		_("Enable/Disable default Scripts folder path."),
+		_('Scripts folder link in menu'),
+		_('Enable/Disable default Scripts folder path.'),
 		null
 	);
 
-	var scriptFolderEntry = _createOnlyEntry(
+	let scriptFolderEntry = _createOnlyEntry(
 		SCRIPTS_FOLDER_PATH,
-		_("Scripts folder path"),
-		_("Path where are located the scripts."),
+		_('Scripts folder path'),
+		_('Path where are located the scripts.'),
 		'',
 		true
 	);
 
-	var scriptsDefaultPathToggle = _createCheckBox(
+	let scriptsDefaultPathToggle = _createCheckBox(
 		SCRIPTS_DEFAULT_PATH_ENABLEDISABLE,
-		_("Default Scripts folder path"),
-		_("Enable/Disable button to scripts folder."),
+		_('Default Scripts folder path'),
+		_('Enable/Disable button to scripts folder.'),
 		function(active){
 			scriptFolderEntry.set_sensitive(active);
 			scriptFolderEntry.text = '';
@@ -67,63 +70,45 @@ function buildPrefsWidget() {
 		scriptFolderEntry.set_sensitive(false);
 	}
 
-	var gitLabel = _createLabel(
-		_("Download from GIT (Only HTTPS):"),
-		_("Download from Git repository. Only HTTPS!")
+	let gitLabel = _createLabel(
+		_('Download from Github:'),
+		_('Download from Github repository. Only HTTPS!')
 	);
 
-	var repositoryComboBox = _createComboBox(
-		'repository',
-		_("Repository"),
-		_("Select repository"),
-		{
-			'Github': _("Github"),
-			'Gitlab' : _("Gitlab"),
-			'Bitbucket' : _("Bitbucket")
-		}
+	let gitInfo = _createLabel(
+		_('* Only works with HTTPS and default script folder.'),
+		_('* Only works with HTTPS and default script folder.')
 	);
 
-	var gitUrlEntry = _createEntry(
-		'notifications',
-		_("Git https"),
-		_("Git https url"),
+	let gitAttention = _createLabel(
+		_('* ATTENTION: I will remove all your default folder files!'),
+		_('* ATTENTION: I will remove all your default folder files!')
+	);
+
+	let gitHttpsUrl = _createEntry(
+		GIT_HTTPS_URL_ENTRY,
+		_('Git https'),
+		_('Git https url string.'),
 		'',
 		true
 	);
 
-	var branchEntry = _createEntry(
+	let branchEntry = _createEntry(
 		BRANCH_ENTRY,
-		_("Branch"),
-		_("Branch name"),
+		_('Branch'),
+		_('Branch name'),
 		'master',
 		true
 	);
 
-	var usernameEntry = _createEntry(
-		'notifications',
-		_("Username"),
-		_("Git username"),
-		'',
-		true
+	let updateButton = _createButton(
+		_('Update'),
+		_('Update')
 	);
 
-	var passwordEntry = _createEntry(
-		'notifications',
-		_("Password"),
-		_("Git password"),
+	let updateStatusLabel = _createLabel(
 		'',
-		false
-	);
-
-	var updateButton = _createButton(
-		'notifications',
-		_("Update"),
-		_("Update")
-	);
-
-	var updateStatusLabel = _createLabel(
-		'',
-		_("Message")
+		_('Message')
 	);
 
 	var emptyLabel = _createLabel('','');
@@ -137,11 +122,10 @@ function buildPrefsWidget() {
 	frame.add(scriptFolderEntry);
 	frame.add(emptyLabel);
 	frame.add(gitLabel);
-	frame.add(repositoryComboBox);
-	frame.add(gitUrlEntry);
+	frame.add(gitInfo);
+	frame.add(gitAttention);
+	frame.add(gitHttpsUrl);
 	frame.add(branchEntry);
-	frame.add(usernameEntry);
-	frame.add(passwordEntry);
 	frame.add(updateButton);
 	frame.add(updateStatusLabel);
 	frame.show_all();
@@ -177,9 +161,9 @@ function _createComboBox(key, text, tooltip, values) {
 	let label = new Gtk.Label({ label: text, xalign: 0, tooltip_text:tooltip });
 	let widget = new Gtk.ComboBoxText();
 
-	for(id in values) {
-		widget.append(id, values[id]);
-	}
+	Object.keys(values).forEach(function(i) {
+	   widget.append(i, values[i]);
+	});
 
 	widget.set_active_id(settings.get_string(key));
 	widget.connect('changed', function(combo_widget) {
@@ -192,7 +176,7 @@ function _createComboBox(key, text, tooltip, values) {
 	return box;
 }
 
-function _createButton(key, text, tooltip) {
+function _createButton(text, tooltip) {
 	let widget = new Gtk.Button({ label: text });
 	return widget;
 }
@@ -219,6 +203,7 @@ function _createEntry(key, text, tooltip, placeholder, setVisibility) {
 function _createOnlyEntry(key, text, tooltip, placeholder, setVisibility) {
 
 	let widget = new Gtk.Entry();
+
 	widget.text = settings.get_string(key);
 
 	widget.connect('changed', function() {
@@ -235,7 +220,7 @@ function _createOnlyEntry(key, text, tooltip, placeholder, setVisibility) {
 function onClicked(updateButton, updateStatusLabel) {
 
 	// Open the file
-	let file = Gio.file_new_for_path(AppDir + '/download/tmp.zip');
+	let file = Gio.file_new_for_path(AppDir + '/tmp.zip');
 	let fstream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
 
 	var _httpSession = new Soup.SessionAsync();
@@ -246,14 +231,28 @@ function onClicked(updateButton, updateStatusLabel) {
 	var bytes_so_far = 0;
 
 	// Update button text.
-	updateButton.set_label("Updating!");
+	updateButton.set_label('Updating!');
+	updateStatusLabel.set_label('');
 
 	// Create an http message
-	var request = Soup.Message.new('GET', 'https://github.com/lucaskenda/handyscripts/archive/master.zip');
+	let downloadUrl, base, usernameAndRepoGroups, usernameAndRepo;
+	let branch = settings.get_string(BRANCH_ENTRY) || 'master';
+
+	base = 'https://github.com/';
+	branch = settings.get_string(BRANCH_ENTRY) || 'master';
+	usernameAndRepoGroups = /https:\/\/github\.com\/([a-zA-Z0-9_]+\/[a-zA-Z0-9_]+).git/.exec(settings.get_string(GIT_HTTPS_URL_ENTRY));
+	usernameAndRepo = '';
+
+	if(usernameAndRepoGroups)
+		usernameAndRepo = usernameAndRepoGroups[1];
+
+	downloadUrl = base + usernameAndRepo + '/archive/' + branch + '.zip';
+
+	var request = Soup.Message.new('GET', downloadUrl);
 
 	// got_headers event
 	request.connect('got_headers', Lang.bind(this, function(message){
-		total_size = message.response_headers.get_content_length()
+		total_size = message.response_headers.get_content_length();
 	}));
 
 	// Got_chunk event
@@ -264,7 +263,7 @@ function onClicked(updateButton, updateStatusLabel) {
 		if(total_size) {
 			let fraction = bytes_so_far / total_size;
 			let percent = Math.floor(fraction * 100);
-			updateStatusLabel.set_label("Download "+percent+"% done ("+bytes_so_far+" / "+total_size+" bytes)");
+			updateStatusLabel.set_label('Download ' + percent + '% done (' + bytes_so_far + ' / ' + total_size + ' bytes)');
 		}
 
 		fstream.write(chunk.get_data(), null, chunk.length);
@@ -274,15 +273,48 @@ function onClicked(updateButton, updateStatusLabel) {
 	_httpSession.queue_message(request, function(_httpSession, message) {
 
 		if(message.status_code != 404) {
-			updateStatusLabel.set_label('Download is done!');
+
+			updateStatusLabel.set_label('Succesfully downloaded!');
+
+			// Erase all in scripts folder and unzip repository in temp.
+			try {
+				let command = Gio.Subprocess.new(
+					[
+						'sh', '-c',
+						'rm -rf ' + AppDir + '/scripts && ' +
+						'mkdir ' + AppDir + '/scripts && ' +
+						'unzip ' + AppDir + '/tmp.zip -d ' + AppDir + '/tmp/ && ' + //+
+						'cp -r ' + AppDir + '/tmp/' + usernameAndRepo.split('/')[1] + '-' + branch + '/* ' + AppDir + '/scripts/'
+					],
+					Gio.SubprocessFlags.NONE
+				);
+
+				// Wait previous commands.
+				command.wait(null);
+
+				// Move repository files and delete all temporal files and folders.
+				Gio.Subprocess.new(
+					[
+						'sh', '-c',
+						'cp -r ' + AppDir + '/tmp/' + usernameAndRepo.split('/')[1] + '-' + branch + '/* ' + AppDir + '/scripts/ && ' +
+						'rm -rf ' + AppDir + '/tmp && ' +
+						'unlink ' + AppDir + '/tmp.zip'
+					],
+					Gio.SubprocessFlags.NONE
+				);
+
+      } catch(err) {
+				updateStatusLabel.set_label('Error: ' + err);
+			}
+
 			fstream.close(null);
 		} else {
 			updateStatusLabel.set_label('Download error ' + message.status_code + '!');
 			fstream.close(null);
-			GLib.unlink(AppDir + '/download/tmp.zip');
+			GLib.unlink(AppDir + '/tmp.zip');
 		}
 
-		updateButton.set_label("Update");
+		updateButton.set_label('Update');
 
 	});
 

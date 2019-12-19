@@ -50,7 +50,6 @@ const Menu = new Lang.Class({
     _executeScript: function(fileName) {
       try {
   			Util.trySpawnCommandLine('gnome-terminal -- sh -c \"bash \'' + fileName + '\';sleep 3\"');
-  			//Main.notify('Starting script!');
       } catch(err) {
         Main.notify('Error: ' + err);
       }
@@ -139,7 +138,7 @@ const Menu = new Lang.Class({
 
             if(fileName.endsWith('.sh')) {
               let popupMenuItem = new PopupMenu.PopupImageMenuItem(fileName.split('.')[0], 'media-playback-start-symbolic');
-              popupMenuItem.connect('activate', this._executeScript.bind(this, folderArray[i].path + fileName));
+              popupMenuItem.connect('activate', this._executeScript.bind(this, folderArray[i].path + '/' + fileName));
               folderArray[i].submenu.menu.addMenuItem(popupMenuItem);
               isEmpty = false;
             }
@@ -188,7 +187,7 @@ function init() {
 
 function enable() {
 	log(`Enabling ${Me.metadata.name} version ${Me.metadata.version}`);
-	menu = new Menu;
+	menu = new Menu();
 	Main.panel.addToStatusArea('handy-scripts', menu, 0, 'right');
 }
 
