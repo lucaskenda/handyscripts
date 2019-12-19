@@ -3,7 +3,11 @@
   "description": "Keep your bash scripts in the desktop for easy access.",
   "name": "Handy Scripts",
   "shell-version": [
-    "3.30.2"
+    "3.30",
+    "3.31",
+    "3.32",
+    "3.33",
+    "3.34"
   ],
   "url": "https://github.com/lucaskenda/handyscripts",
   "uuid": "lucaskenda@gmail.com",
