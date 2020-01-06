@@ -23,7 +23,7 @@
 *   The search is not recursive and search just one depth below.
 
 ## Changelog
-# v4
+# v5
 ### Added
 - Custom scripts folder path.
 - Show/hide scripts folder link in menu.
