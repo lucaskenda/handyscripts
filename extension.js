@@ -30,7 +30,7 @@ const Menu = new Lang.Class({
 
       this.parent(1, 'MainPopupMenu', false);
 
-			this._settings = Convenience.getSettings(SCHEMA);
+      this._settings = Convenience.getSettings(SCHEMA);
 
       let box = new St.BoxLayout();
       let icon = new St.Icon({ icon_name: 'utilities-terminal-symbolic', style_class: 'system-status-icon'});
@@ -49,7 +49,11 @@ const Menu = new Lang.Class({
 
     _executeScript: function(fileName) {
       try {
-  			Util.trySpawnCommandLine('gnome-terminal -- sh -c \"bash \'' + fileName + '\';sleep 3\"');
+        if (fileName.endsWith('.py') || fileName.endsWith('.pyw')) {
+          Util.trySpawnCommandLine(fileName);
+        } else {
+          Util.trySpawnCommandLine('gnome-terminal -- sh -c \"bash \'' + fileName + '\';sleep 3\"');
+        }
       } catch(err) {
         Main.notify('Error: ' + err);
       }
@@ -73,7 +77,7 @@ const Menu = new Lang.Class({
       let isEmpty = true;
 
       // Set scripts folder
-			if(
+      if(
         this._settings.get_boolean(SCRIPTS_DEFAULT_PATH_ENABLEDISABLE) &&
         this._settings.get_string(SCRIPTS_FOLDER_PATH) != ''
       ) {
@@ -113,7 +117,7 @@ const Menu = new Lang.Class({
             // Add files to menu.
             if(file.get_file_type() == Gio.FileType.REGULAR) {
 
-              if(fileName.endsWith('.sh')) {
+              if(fileName.endsWith('.sh') || fileName.endsWith('.py') || fileName.endsWith('.pyw')) {
                 let popupMenuItem = new PopupMenu.PopupImageMenuItem(fileName.split('.')[0], 'media-playback-start-symbolic');
                 popupMenuItem.connect('activate', this._executeScript.bind(this, this.folder + fileName));
                 this.menu.addMenuItem(popupMenuItem);
@@ -136,7 +140,7 @@ const Menu = new Lang.Class({
 
             let fileName = file.get_name();
 
-            if(fileName.endsWith('.sh')) {
+            if(fileName.endsWith('.sh') || fileName.endsWith('.py') || fileName.endsWith('.pyw')) {
               let popupMenuItem = new PopupMenu.PopupImageMenuItem(fileName.split('.')[0], 'media-playback-start-symbolic');
               popupMenuItem.connect('activate', this._executeScript.bind(this, folderArray[i].path + '/' + fileName));
               folderArray[i].submenu.menu.addMenuItem(popupMenuItem);
@@ -181,17 +185,17 @@ let menu;
 let settings;
 
 function init() {
-	log(`Initializing ${Me.metadata.name} version ${Me.metadata.version}`);
-	this._settings = Convenience.getSettings('org.gnome.shell.extensions.handyscripts');
+  log(`Initializing ${Me.metadata.name} version ${Me.metadata.version}`);
+  this._settings = Convenience.getSettings('org.gnome.shell.extensions.handyscripts');
 }
 
 function enable() {
-	log(`Enabling ${Me.metadata.name} version ${Me.metadata.version}`);
-	menu = new Menu();
-	Main.panel.addToStatusArea('handy-scripts', menu, 0, 'right');
+  log(`Enabling ${Me.metadata.name} version ${Me.metadata.version}`);
+  menu = new Menu();
+  Main.panel.addToStatusArea('handy-scripts', menu, 0, 'right');
 }
 
 function disable() {
-	log(`Disabling ${Me.metadata.name} version ${Me.metadata.version}`);
-	menu.destroy();
+  log(`Disabling ${Me.metadata.name} version ${Me.metadata.version}`);
+  menu.destroy();
 }
